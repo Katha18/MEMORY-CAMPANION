@@ -4,5 +4,6 @@ Memory Companion is an Alexa+ MCP server that brings calm to dementia care. When
 
 
 To run it (Node.js required):npm install DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector node index.js
+
 Then open a second terminal in the same folder and run:node dashboard-server.js
 Open http://localhost:3000 in a browser. Click Show sample week to see a full dashboard without entering any data first.
