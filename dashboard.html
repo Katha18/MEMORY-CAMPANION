@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memory Companion: caregiver report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Literata:opsz,wght@7..72,400;7..72,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbf3ec; --surface:#fffaf4; --ink:#2b2438; --muted:#7a7190; --line:#ecd9c8;
+  --indigo:#7c4fd1; --indigo-soft:#f0e6fb;
+  --good:#1f9d7c; --good-soft:#dcf5ec;
+  --rose:#e2577a; --rose-soft:#fde6ec;
+  --amber:#e0963a; --amber-soft:#fdf0d9;
+  --blue:#4a90c4; --blue-soft:#e3f1fa;
+  --sans:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Literata",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.55 var(--sans)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--indigo);outline-offset:2px;border-radius:6px}
+.page{max-width:1120px;margin:0 auto;padding:0 24px 56px}
+
+/* top bar */
+.bar{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;padding:22px 0 18px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:.1px}
+.tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:3px}
+.seg button{border:0;background:none;padding:7px 16px;border-radius:999px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--indigo);color:#fff}
+.ghost{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 18px;cursor:pointer;box-shadow:0 1px 6px rgba(124,79,209,.08)}
+.ghost[aria-pressed="true"]{border-color:var(--indigo);background:var(--indigo-soft);color:var(--indigo)}
+.live{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.live i{width:9px;height:9px;border-radius:50%;background:var(--good);display:inline-block}
+.live.off i{background:#9aa3b2}
+
+.note{margin:20px 0 0;padding:12px 16px;border-radius:10px;background:var(--amber-soft);color:#5c3703;font-size:16px}
+.note.err{background:var(--rose-soft);color:#6d1226}
+code{font:600 .92em ui-monospace,Menlo,Consolas,monospace;background:rgba(0,0,0,.07);padding:1px 6px;border-radius:5px}
+
+/* hero */
+.hero{padding:44px 0 34px}
+h1{margin:0;font:600 clamp(30px,4.4vw,46px)/1.12 var(--serif);letter-spacing:-.01em}
+.range{margin:8px 0 0;color:var(--muted)}
+.story{margin:26px 0 0;max-width:64ch;font:400 clamp(19px,2.2vw,23px)/1.62 var(--serif)}
+.ledger{margin:34px 0 0;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.ledger>div{padding:20px 22px;border-radius:22px;background:#f1e8fb}
+.ledger>div:nth-child(2){background:#fde9dd}
+.ledger>div:nth-child(3){background:#fde4ec}
+.ledger>div:nth-child(4){background:#dcf3ea}
+.ledger dt{font-size:15px}
+.ledger dd{margin:2px 0 0;font:600 34px/1.15 var(--serif)}
+.ledger dd small{display:block;font:400 15px/1.4 var(--sans);color:var(--muted);margin-top:2px}
+.ledger .up{color:#b8294f} .ledger .down{color:#14795f}
+.ledger dt{color:#4a4260}
+
+/* panels */
+.cols{display:grid;grid-template-columns:1.15fr .85fr;gap:24px;margin-top:8px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px;box-shadow:0 2px 14px rgba(124,79,209,.06)}
+.panel.wide{margin-top:24px}
+h2{margin:0;font:700 20px/1.3 var(--sans)}
+.hint{margin:4px 0 18px;color:var(--muted);font-size:16px;max-width:70ch}
+
+/* alerts */
+.alerts{list-style:none;margin:0;padding:0;display:grid;gap:12px;max-height:470px;overflow:auto}
+.alerts li{border-left:6px solid var(--blue);background:var(--blue-soft);border-radius:6px 16px 16px 6px;padding:14px 18px}
+.alerts li.urgent{border-color:#e2577a;background:var(--rose-soft)}
+.alerts li.high{border-color:#eda04a;background:var(--amber-soft)}
+.alerts .top{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.alerts strong{font-size:17px}
+.sev{font-size:14px;font-weight:700}
+.urgent .sev{color:#a8203f} .high .sev{color:#8a5206} .medium .sev{color:#2a6296}
+.alerts p{margin:4px 0 2px;font-size:16px}
+.when{font-size:14px;color:var(--muted)}
+.empty{padding:18px;border-radius:10px;background:var(--good-soft);color:#0f4f46}
+
+/* topics */
+.topics{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.topics li{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline}
+.bar-track{grid-column:1/-1;height:10px;border-radius:6px;background:#f3e9e0;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px}
+.sub{margin:26px 0 8px;font-weight:700}
+.repeats{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.repeats li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.repeats li span:last-child{color:var(--muted);white-space:nowrap}
+
+/* rhythm */
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:14px;font-size:15px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.legend i.ring{background:none;border:2px solid var(--rose);width:15px;height:15px}
+svg text{font-family:var(--sans)}
+
+/* routine grid */
+.scroll{overflow-x:auto}
+table.grid{border-collapse:collapse;width:100%;min-width:640px;font-size:15px}
+.grid th,.grid td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+.grid thead th{font-weight:400;color:var(--muted);line-height:1.25}
+.grid thead th b{display:block;color:var(--ink)}
+.grid th:first-child,.grid td:first-child{text-align:left;font-weight:700;padding-left:0;position:sticky;left:0;background:var(--surface)}
+.ok{color:#14795f;font-weight:700} .miss{color:#b8294f;font-weight:700}
+.pending{color:var(--muted)} .dot{font-size:18px;color:var(--good)} .dot.no{color:#98a1b3}
+.grid tr.group td{padding-top:20px;border-bottom:0;text-align:left;color:var(--muted);font-weight:700}
+
+.foot{margin:30px 0 0;color:var(--muted);font-size:15px;max-width:76ch}
+
+@media (max-width:900px){
+  .cols{grid-template-columns:1fr}
+  .ledger{grid-template-columns:1fr 1fr}
+}
+@media (max-width:520px){.page{padding:0 16px 40px}.panel{padding:20px 18px}}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="bar">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="12" cy="15" r="9" fill="#7c4fd1"/><circle cx="19" cy="15" r="9" fill="#e0699a" fill-opacity=".55"/></svg>
+      Memory Companion
+    </div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Time period" id="seg">
+        <button data-days="7" aria-pressed="true">7 days</button>
+        <button data-days="14" aria-pressed="false">14 days</button>
+        <button data-days="30" aria-pressed="false">30 days</button>
+      </div>
+      <button class="ghost" id="sampleBtn" aria-pressed="false">Show sample week</button>
+      <span class="live" id="live"><i></i><span>Connecting</span></span>
+    </div>
+  </header>
+
+  <div id="banner" aria-live="polite"></div>
+
+  <section class="hero">
+    <h1 id="h1">How the week went</h1>
+    <p class="range" id="range"></p>
+    <p class="story" id="story"></p>
+    <dl class="ledger" id="ledger"></dl>
+  </section>
+
+  <div class="cols">
+    <section class="panel" id="alerts"></section>
+    <section class="panel" id="topics"></section>
+  </div>
+  <section class="panel wide" id="rhythm"></section>
+  <section class="panel wide" id="routine"></section>
+
+  <p class="foot">This report describes patterns in conversations. It is not a diagnosis and does not replace medical advice. If repeated questions, distress or missed doses are increasing, share this page with the patient's doctor.</p>
+</div>
+
+<script>
+const SCHEDULE=[
+  {medication:"morning pill",window:"morning",dueHour:10},
+  {medication:"evening pill",window:"evening",dueHour:20}
+]; // keep in sync with index.js
+const DAY=864e5;
+const CAT={
+  repeated_question:{label:"Repeated questions",color:"#3fae96"},
+  time_place:{label:"Time and place",color:"#5b8fd0"},
+  identity:{label:"Who people are",color:"#9b7bdc"},
+  loved_one:{label:"A loved one",color:"#e0699a"},
+  meal_hydration:{label:"Food and drink",color:"#4fb58a"},
+  going_home:{label:"Wanting to go home",color:"#eda04a"},
+  medication:{label:"Medication",color:"#8a8fa3"},
+  distress:{label:"Feeling upset",color:"#e2577a"},
+  urgent_help:{label:"Urgent help",color:"#6e0d2a"},
+  other:{label:"Other",color:"#9aa3b2"}
+};
+const SEV={urgent:{rank:0,label:"Urgent"},high:{rank:1,label:"High priority"},medium:{rank:2,label:"Worth noting"}};
+const ALERT_TITLE={
+  possible_extra_dose:"Possible extra dose",
+  wandering_intent:"Wanting to go home, again and again",
+  emotional_loop:"Asking about a loved one, again and again",
+  high_repetition:"The same question many times",
+  agitation:"Sounded agitated",
+  anxious_repeat:"Anxious repeated question",
+  urgent_help:"May need urgent help"
+};
+const MEALS=["breakfast","lunch","dinner"];
+
+const state={days:7,sample:false,data:null,raw:"",error:false,checked:null};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+const dayKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const clock=d=>d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+const wd=d=>d.toLocaleDateString([],{weekday:"short"});
+const md=d=>d.toLocaleDateString([],{month:"short",day:"numeric"});
+const pl=(n,w,p)=>`${n} ${n===1?w:(p||w+"s")}`;
+const norm=s=>String(s).toLowerCase().replace(/[^a-z0-9\s]/g,"").replace(/\s+/g," ").trim();
+const catOf=c=>CAT[c]||CAT.other;
+
+/* ---------- analysis (mirrors get_caregiver_report in index.js) ---------- */
+function repeatEvents(msgs){
+  const seen={};let n=0;
+  [...msgs].sort((a,b)=>a.at.localeCompare(b.at)).forEach(m=>{
+    const k=dayKey(new Date(m.at))+"|"+m.key;
+    if(seen[k])n++;
+    seen[k]=true;
+  });
+  return n;
+}
+function compute(data,days,end){
+  const start=new Date(end.getTime()-days*DAY);
+  const prevStart=new Date(start.getTime()-days*DAY);
+  const inR=(iso,a,b)=>{const t=new Date(iso).getTime();return t>=a.getTime()&&t<=b.getTime();};
+  const msgs=data.messages.filter(m=>inR(m.at,start,end));
+  const prev=data.messages.filter(m=>inR(m.at,prevStart,new Date(start.getTime()-1)));
+  const alerts=data.alerts.filter(a=>inR(a.at,start,end))
+    .sort((a,b)=>((SEV[a.severity]||{rank:3}).rank-(SEV[b.severity]||{rank:3}).rank)||(new Date(b.at)-new Date(a.at)));
+
+  const byCat={};msgs.forEach(m=>byCat[m.category]=(byCat[m.category]||0)+1);
+  const counts={};msgs.forEach(m=>{(counts[m.key]=counts[m.key]||{text:m.message,n:0}).n++;});
+  const top=Object.values(counts).filter(c=>c.n>=2).sort((a,b)=>b.n-a.n).slice(0,4);
+
+  const dayList=[];
+  for(let i=days-1;i>=0;i--){const date=new Date(end.getTime()-i*DAY);dayList.push({date,dk:dayKey(date)});}
+
+  const all=[...data.messages,...data.doses,...data.meals].map(x=>x.at).sort();
+  const firstDay=all.length?dayKey(new Date(all[0])):null;
+  const todayKey=dayKey(end);
+
+  // doses: use the day stored in each dose's key so it matches the server's view
+  const doseRows=SCHEDULE.map(s=>({s,cells:dayList.map(({date,dk})=>{
+    if(!firstDay||dk<firstDay)return{st:"na"};
+    const dose=data.doses.find(d=>String(d.key).split("|")[0]===dk&&norm(d.medication)===norm(s.medication)&&norm(d.window)===norm(s.window));
+    if(dose)return{st:"taken",at:new Date(dose.at)};
+    const due=new Date(date);due.setHours(s.dueHour,0,0,0);
+    return{st:due.getTime()>end.getTime()?"pending":"missed"};
+  })}));
+  const flat=doseRows.flatMap(r=>r.cells);
+  const taken=flat.filter(c=>c.st==="taken").length;
+  const missed=flat.filter(c=>c.st==="missed").length;
+
+  const mealRows=MEALS.map(meal=>({meal,cells:dayList.map(({dk})=>{
+    if(!firstDay||dk<firstDay)return{st:"na"};
+    const have=data.meals.some(m=>m.meal===meal&&dayKey(new Date(m.at))===dk);
+    if(have)return{st:"yes"};
+    return{st:dk===todayKey?"pending":"no"};
+  })}));
+
+  return{start,end,days,msgs,prev,alerts,byCat,top,dayList,doseRows,mealRows,taken,missed,
+    repeats:repeatEvents(msgs),prevRepeats:repeatEvents(prev)};
+}
+
+/* ---------- plain-language story ---------- */
+function story(R){
+  if(!R.msgs.length&&!R.taken&&!R.missed)
+    return "Nothing has been logged in this period yet. Once the patient talks with the Memory Companion, a plain-language summary will appear here.";
+  const s=[];
+  if(R.msgs.length){
+    s.push(`There were ${pl(R.msgs.length,"conversation")}, and ${R.repeats} of them repeated something already said that day.`);
+    if(R.prev.length||R.prevRepeats){
+      if(R.prevRepeats===0&&R.repeats>0)s.push("The period before had no repeated questions, so this is new.");
+      else if(R.prevRepeats>0){
+        const pct=Math.round((R.repeats-R.prevRepeats)/R.prevRepeats*100);
+        s.push(pct>=100?"Repeated questions are more than double the period before.":pct>0?`Repeated questions are up about ${pct}% from the period before.`:pct<0?`Repeated questions are down about ${Math.abs(pct)}% from the period before.`:"Repeated questions are about the same as the period before.");
+      }
+    }
+    const topCat=Object.entries(R.byCat).sort((a,b)=>b[1]-a[1])[0];
+    if(topCat)s.push(`Most conversations were about ${catOf(topCat[0]).label.toLowerCase()}.`);
+    const gh=R.msgs.filter(m=>m.category==="going_home");
+    if(gh.length){
+      const eve=gh.filter(m=>{const h=new Date(m.at).getHours();return h>=17&&h<21;}).length;
+      s.push(`"I want to go home" came up ${pl(gh.length,"time")}`+(eve>=gh.length/2?", mostly in the evening, which is a common time for restlessness.":"."));
+    }
+  }
+  const urgent=R.alerts.filter(a=>a.severity==="urgent").length;
+  if(urgent)s.push(`${pl(urgent,"alert")} marked urgent need a look.`);
+  else if(R.alerts.length)s.push(`${pl(R.alerts.length,"alert")} were raised, none urgent.`);
+  else s.push("No alerts were raised.");
+  if(R.missed)s.push(`${pl(R.missed,"scheduled dose")} may have been missed.`);
+  else if(R.taken)s.push("Every scheduled dose that was due has been confirmed.");
+  return s.join(" ");
+}
+
+/* ---------- rendering ---------- */
+function renderLedger(R){
+  const delta=R.repeats-R.prevRepeats;
+  const dtxt=(R.prev.length||R.prevRepeats)?(delta>0?`<small class="up">${delta} more than the period before</small>`:delta<0?`<small class="down">${Math.abs(delta)} fewer than the period before</small>`:`<small>Same as the period before</small>`):"<small>&nbsp;</small>";
+  const urgent=R.alerts.filter(a=>a.severity==="urgent").length;
+  const due=R.taken+R.missed;
+  $("ledger").innerHTML=`
+    <div><dt>Conversations</dt><dd>${R.msgs.length}<small>&nbsp;</small></dd></div>
+    <div><dt>Repeated questions</dt><dd>${R.repeats}${dtxt}</dd></div>
+    <div><dt>Alerts</dt><dd>${R.alerts.length}<small>${urgent?pl(urgent,"urgent","urgent"):"None urgent"}</small></dd></div>
+    <div><dt>Doses confirmed</dt><dd>${R.taken}<small>${due?`of ${due} that were due`:"None due yet"}</small></dd></div>`;
+}
+function renderAlerts(R){
+  const items=R.alerts.map(a=>{
+    const sev=SEV[a.severity]?a.severity:"medium";
+    const d=new Date(a.at);
+    return `<li class="${sev}"><div class="top"><strong>${esc(ALERT_TITLE[a.type]||a.type)}</strong><span class="sev">${SEV[sev].label}</span></div><p>${esc(a.note)}</p><span class="when">${wd(d)} ${md(d)}, ${clock(d)}</span></li>`;
+  }).join("");
+  $("alerts").innerHTML=`<h2>Needs your attention</h2><p class="hint">Most serious first. These were raised automatically from what the patient said and did.</p>`+
+    (items?`<ul class="alerts">${items}</ul>`:`<div class="empty">No alerts in this period. Nothing needs a closer look right now.</div>`);
+}
+function renderTopics(R){
+  const entries=Object.entries(R.byCat).sort((a,b)=>b[1]-a[1]);
+  const max=entries.length?entries[0][1]:1;
+  const rows=entries.map(([c,n])=>`<li><span>${esc(catOf(c).label)}</span><span>${n}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(6,n/max*100)}%;background:${catOf(c).color}"></div></div></li>`).join("");
+  const reps=R.top.map(t=>`<li><span>"${esc(t.text)}"</span><span>${t.n} times</span></li>`).join("");
+  $("topics").innerHTML=`<h2>What the conversations were about</h2><p class="hint">Number of conversations by topic.</p>`+
+    (rows?`<ul class="topics">${rows}</ul>`:`<p class="hint">No conversations yet.</p>`)+
+    (reps?`<div class="sub">Asked most often</div><ul class="repeats">${reps}</ul>`:"");
+}
+function renderRhythm(R){
+  const n=R.dayList.length,W=780,L=92,Rm=16,T=26,rowH=n>14?18:26,H=T+n*rowH+34;
+  const h0=5,h1=23,x=h=>L+(Math.min(h1,Math.max(h0,h))-h0)/(h1-h0)*(W-L-Rm);
+  const rowOf={};R.dayList.forEach((d,i)=>rowOf[d.dk]=i);
+  const hourOf=d=>d.getHours()+d.getMinutes()/60;
+  let g=`<rect x="${x(17)}" y="${T-8}" width="${x(21)-x(17)}" height="${n*rowH+8}" fill="#e6e3f8" opacity=".7" rx="6"/><text x="${(x(17)+x(21))/2}" y="${T-12}" text-anchor="middle" font-size="12" fill="#4b3fb5">Evening</text>`;
+  R.dayList.forEach((d,i)=>{
+    const y=T+i*rowH+rowH/2;
+    g+=`<line x1="${L}" x2="${W-Rm}" y1="${y}" y2="${y}" stroke="#e3e8f1"/>`;
+    if(n<=14||i%2===0)g+=`<text x="${L-12}" y="${y+4}" text-anchor="end" font-size="13" fill="#58627a">${wd(d.date)} ${d.date.getDate()}</text>`;
+  });
+  [6,9,12,15,18,21].forEach(h=>{
+    g+=`<text x="${x(h)}" y="${H-10}" text-anchor="middle" font-size="12" fill="#58627a">${h===12?"12 pm":h<12?h+" am":(h-12)+" pm"}</text>`;
+  });
+  const used={};
+  R.msgs.forEach(m=>{
+    const d=new Date(m.at),i=rowOf[dayKey(d)];if(i===undefined)return;
+    used[m.category]=1;
+    g+=`<circle cx="${x(hourOf(d))}" cy="${T+i*rowH+rowH/2}" r="5.5" fill="${catOf(m.category).color}" fill-opacity=".85" stroke="#fff" stroke-width="1"><title>${esc(clock(d)+": "+m.message)}</title></circle>`;
+  });
+  R.alerts.forEach(a=>{
+    const d=new Date(a.at),i=rowOf[dayKey(d)];if(i===undefined)return;
+    const col=a.severity==="urgent"?"#a8203f":a.severity==="high"?"#c77410":"#2f5f9e";
+    g+=`<circle cx="${x(hourOf(d))}" cy="${T+i*rowH+rowH/2}" r="${Math.min(11,rowH/2)}" fill="none" stroke="${col}" stroke-width="2"><title>${esc((ALERT_TITLE[a.type]||a.type)+" at "+clock(d))}</title></circle>`;
+  });
+  const legend=Object.keys(used).map(c=>`<span><i style="background:${catOf(c).color}"></i>${esc(catOf(c).label)}</span>`).join("")+`<span><i class="ring"></i>Alert</span>`;
+  $("rhythm").innerHTML=`<h2>When things happen during the day</h2><p class="hint">Each dot is one conversation, placed at the time of day it happened. Rings mark alerts. Clusters in the evening can point to late-day restlessness.</p>
+    <div class="scroll"><svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:560px;height:auto" role="img" aria-label="Conversations by time of day for each of the last ${n} days">${g}</svg></div>
+    <div class="legend">${legend}</div>`;
+}
+function renderRoutine(R){
+  const head=R.dayList.map(d=>`<th><b>${wd(d.date)}</b>${d.date.getDate()}</th>`).join("");
+  const dose=c=>c.st==="taken"?`<span class="ok">&#10003; ${clock(c.at)}</span>`:c.st==="missed"?`<span class="miss">Missed</span>`:c.st==="pending"?`<span class="pending">Due later</span>`:"";
+  const meal=c=>c.st==="yes"?`<span class="dot" title="Logged" aria-label="Logged">&#9679;</span>`:c.st==="no"?`<span class="dot no" title="Not logged" aria-label="Not logged">&#9675;</span>`:c.st==="pending"?`<span class="pending" aria-label="Not yet">&ndash;</span>`:"";
+  const label=s=>s.charAt(0).toUpperCase()+s.slice(1);
+  const rows=R.doseRows.map(r=>`<tr><td>${esc(label(r.s.medication))}</td>${r.cells.map(c=>`<td>${dose(c)}</td>`).join("")}</tr>`).join("")+
+    `<tr class="group"><td colspan="${R.dayList.length+1}">Meals</td></tr>`+
+    R.mealRows.map(r=>`<tr><td>${label(r.meal)}</td>${r.cells.map(c=>`<td>${meal(c)}</td>`).join("")}</tr>`).join("");
+  $("routine").innerHTML=`<h2>Medication and meals</h2><p class="hint">A dose is confirmed once per window. A filled dot means the meal was logged; an empty dot means it was not.</p>
+    <div class="scroll"><table class="grid"><thead><tr><th></th>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function render(){
+  const data=state.data||{messages:[],doses:[],meals:[],alerts:[]};
+  const end=new Date();
+  const R=compute(data,state.days,end);
+  $("h1").textContent=`How the last ${state.days} days went`;
+  $("range").textContent=`${md(R.start)} to ${md(end)}`;
+  $("story").textContent=story(R);
+  renderLedger(R);renderAlerts(R);renderTopics(R);renderRhythm(R);renderRoutine(R);
+  $("banner").innerHTML=state.sample
+    ?`<div class="note">You are looking at sample data made up for demonstration. It is not from a real patient.</div>`
+    :state.error?`<div class="note err">Can't reach the data server. In the terminal, run <code>node dashboard-server.js</code>, then refresh this page.</div>`:"";
+  const live=$("live");
+  live.className="live"+((state.sample||state.error)?" off":"");
+  live.lastElementChild.textContent=state.sample?"Sample data":state.error?"Not connected":`Live, checked ${clock(state.checked||end)}`;
+}
+
+/* ---------- sample week (clearly labelled, never written to disk) ---------- */
+function buildSample(){
+  const now=new Date(),M=[],D=[],ML=[],A=[];
+  const at=(off,h,m=0)=>{const d=new Date(now.getTime()-off*DAY);d.setHours(h,m,0,0);return d;};
+  const live=d=>d<=now;
+  const msg=(t,c,off,h,m=0,dist="calm")=>{const d=at(off,h,m);if(live(d))M.push({key:norm(t),message:t,category:c,distress:dist,at:d.toISOString()});};
+  const alert=(type,sev,note,off,h,m=0)=>{const d=at(off,h,m);if(live(d))A.push({type,severity:sev,note,at:d.toISOString(),dedupeKey:type+off});};
+  const rep={13:2,12:2,11:2,10:3,9:2,8:3,7:2,6:2,5:2,4:3,3:3,2:4,1:5,0:5};
+  for(const off in rep)for(let i=0;i<rep[off];i++)msg("What day is it?","time_place",+off,8+i*2,10*i);
+  [5,3,2,1,0].forEach(off=>{
+    msg("I want to go home","going_home",off,18,20);
+    msg("I want to go home","going_home",off,19,5,off===1?"agitated":"calm");
+    alert("wandering_intent","high","Patient said they want to go home 2 times today (evening, a common restless period).",off,19,5);
+  });
+  msg("I want to go home","going_home",1,19,50,"agitated");
+  alert("agitation","high",'Patient sounded agitated: "I want to go home"',1,19,50);
+  [4,2,1].forEach(off=>{
+    msg("When is mom visiting?","loved_one",off,11);msg("When is mom visiting?","loved_one",off,14,30);msg("When is mom visiting?","loved_one",off,17,10);
+    alert("emotional_loop","medium","Patient asked about a loved one 3 times today.",off,17,10);
+  });
+  msg("Who is that woman?","identity",3,15,40);msg("Who is that woman?","identity",1,15,40);
+  alert("high_repetition","medium",'The same question was asked 5 times today: "What day is it?"',1,16,40);
+  for(let off=13;off>=0;off--){
+    const dk=dayKey(at(off,12));
+    if(off!==1){const d=at(off,8,30);if(live(d))D.push({key:`${dk}|morning pill|morning`,medication:"morning pill",window:"morning",at:d.toISOString()});}
+    if(off!==4){const d=at(off,20,15);if(live(d))D.push({key:`${dk}|evening pill|evening`,medication:"evening pill",window:"evening",at:d.toISOString()});}
+    [["breakfast",8],["lunch",13],["dinner",18.75]].forEach(([meal,h])=>{
+      if(off===3&&meal!=="breakfast")return;if(off===6&&meal==="lunch")return;
+      const d=at(off,Math.floor(h),Math.round((h%1)*60));if(live(d))ML.push({meal,at:d.toISOString()});
+    });
+  }
+  alert("possible_extra_dose","urgent","Patient asked to confirm another morning pill dose at 9:05 PM, but one was already logged at 8:30 AM. Please check in.",2,21,5);
+  return{messages:M,doses:D,meals:ML,alerts:A};
+}
+
+/* ---------- data loading ---------- */
+async function load(){
+  if(state.sample)return;
+  try{
+    const r=await fetch("/api/data",{cache:"no-store"});
+    if(!r.ok)throw new Error(r.status);
+    const raw=await r.text();
+    state.error=false;state.checked=new Date();
+    if(raw!==state.raw){state.raw=raw;const d=JSON.parse(raw);state.data={messages:d.messages||[],doses:d.doses||[],meals:d.meals||[],alerts:d.alerts||[]};}
+  }catch(e){state.error=true;}
+  render();
+}
+$("seg").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  state.days=+b.dataset.days;
+  [...$("seg").children].forEach(x=>x.setAttribute("aria-pressed",x===b));
+  render();
+});
+$("sampleBtn").addEventListener("click",()=>{
+  state.sample=!state.sample;
+  $("sampleBtn").setAttribute("aria-pressed",state.sample);
+  $("sampleBtn").textContent=state.sample?"Back to live data":"Show sample week";
+  if(state.sample){state.data=buildSample();render();}
+  else{state.raw="";load();}
+});
+render();load();setInterval(load,4000);
+</script>
+</body>
+</html>

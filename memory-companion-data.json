@@ -1,0 +1,28 @@
+{
+  "messages": [
+    {
+      "key": "i want to go home",
+      "message": "i want to go home",
+      "category": "time_place",
+      "distress": "calm",
+      "at": "2026-10-13T17:47:43.385Z"
+    },
+    {
+      "key": "i want to go home",
+      "message": "i want to go home",
+      "category": "going_home",
+      "distress": "calm",
+      "at": "2026-10-13T20:14:59.872Z"
+    },
+    {
+      "key": "where is my husband",
+      "message": "where is my husband",
+      "category": "loved_one",
+      "distress": "calm",
+      "at": "2026-10-13T20:30:25.833Z"
+    }
+  ],
+  "doses": [],
+  "meals": [],
+  "alerts": []
+}
